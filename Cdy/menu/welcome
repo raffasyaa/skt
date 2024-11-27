@@ -9,9 +9,9 @@ GREENBG="\033[42;37m"
 REDBG="\033[41;37m"
 z="\033[1;96m"
 NC='\e[0m'
-######################################
+ 
 MY 
-######################################
+ 
 #IPVPS=$(curl -s ipv4.icanhazip.com)
 ISP=$(cat /etc/xray/isp)
 CITY=$(cat /etc/xray/city)
@@ -25,7 +25,7 @@ MODEL=$(cat /etc/os-release | grep -w ID | head -n1 | sed 's/=//g' | sed 's/"//g
 #cpu_usage+=" %"
 
 clear
-######################################
+ 
 # // GETTINGS SYSTEM
 ssh_service=$(/etc/init.d/ssh status | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
 
@@ -38,50 +38,50 @@ xray_service=$(systemctl status xray | grep Active | awk '{print $3}' | cut -d "
 nginx_service=$(systemctl status nginx | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
 
 clear
-######################################
+ 
 # // RUNNING SSH
-######################################
+ 
 if [[ $ssh_service == "running" ]]; then 
    status_ssh="\033[92;1mON${NC}"
 else
    status_ssh="\033[91;1mOFF${NC} "
 fi
-######################################
+ 
 # // RUNNING WEBSOCKET
-######################################
+ 
 ssh_ws=$( systemctl status ws | grep Active | awk '{print $3}' | sed 's/(//g' | sed 's/)//g' )
 if [[ $ssh_ws == "running" ]]; then
     status_ws_epro="\033[92;1mON${NC}"
 else
     status_ws_epro="\033[91;1mOFF${NC} "
 fi
-######################################
+ 
 # RUNNING HAPROXY
-######################################
+ 
 if [[ $haproxy_service == "running" ]]; then 
    status_haproxy="\033[92;1mON${NC}"
 else
    status_haproxy="\033[91;1mOFF${NC} "
 fi
-######################################
+ 
 # RUNNING XRAY
-######################################
+ 
 if [[ $xray_service == "running" ]]; then 
    status_xray="\033[92;1mON${NC}"
 else
    status_xray="\033[91;1mOFF${NC} "
 fi
-######################################
+ 
 # RUNNING NGINX
-######################################
+ 
 if [[ $nginx_service == "running" ]]; then 
    status_nginx="\033[92;1mON${NC}"
 else
    status_nginx="\033[91;1mOFF${NC} "
 fi
-######################################
+ 
 # RUNNING DROPBEAR
-######################################
+ 
 if [[ $dropbear_service == "running" ]]; then 
    status_dropbear="\033[92;1mGOOD${NC}"
 else

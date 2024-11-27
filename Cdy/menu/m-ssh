@@ -11,13 +11,32 @@ BLUE="\033[4;34m"
 BG_BLU="\033[44;1m" # BG BIRU
 Xark='\e[0m'
 GREN="\033[92m"
+
+# Mendefinisikan warna untuk pesan
+export RED='\033[0;31m'
+export GREEN='\033[0;32m'
+export YELLOW='\033[0;33m'
+export BLUE='\033[0;34m'
+export PURPLE='\033[0;35m'
+export CYAN='\033[0;36m'
+export CYAN_BG='\033[46;1;97m'   # Latar belakang cyan cerah dengan teks putih
+export LIGHT='\033[0;37m'
+export PINK='\033[0;35m'
+export ORANGE='\033[38;5;208m'
+export PINK_BG='\033[45;1;97m'
+export RED_BG='\033[41;1;97m'   # Latar belakang pink cerah dengan teks putih
+export NC='\033[0m'
+export BIRU='\033[44;1;97m'
+export INDIGO='\033[38;5;54m'
+export TEAL='\033[38;5;30m'
+export WHITE='\033[1;37m'
 clear
 
 function baris_panjang() {
   echo -e "${BlueCyan} ———————————————————————————————————————${Xark}"
 }
-function ATAS() {
-  echo -e     "${ungu}         SSH-Dropbear-OpenVPN           ${Xark} "
+function TITLE() {
+  echo -e  " ${RED_BG}         SSH WS-Dropbear-OpenVPN       ${Xark} "
 }
 function  MEMBER() {
   echo -e  " ${BG_BLU}                MEMBER                 ${Xark}"
@@ -105,15 +124,10 @@ function Recovery_Ssh() {
   recover
 }
 
-# . Banner Ssh
-function Banner() {
-  baris_panjang
-  ATAS
-  baris_panjang
-}
 function Menu_Features() {
   baris_panjang
-  echo -e ""
+  TITLE
+  baris_panjang
   echo -e "  1.)  Check Users Login"
   echo -e "  2.)  Create Accounts"
   echo -e "  3.)  Delete Accounts"
@@ -141,14 +155,11 @@ function Menu_Features() {
   echo -e " 13.) Detail Accounts"
   echo -e " 14.) Check Login UDP"
   baris_panjang
-  echo -e " 15.) Back to Menu"
-  echo -e "  x.)  Exit"
-  echo -e " "
+  echo -e " x .) Back to Menu"
   baris_panjang
   baris_panjang
 }
 
-Banner
 Menu_Features
 read -p "Select From Options [1-15 or x] :  " Ltt
 case $Ltt in
@@ -166,7 +177,6 @@ case $Ltt in
 12) clear ; Check_Mullog ;;
 13) clear ; Details_Account ;;
 14) clear ; cekudp ;;
-15) clear ; menu ;;
-x) exit ;;
+x) clear ; menu ;;
 *) m-ssh ;;
 esac
