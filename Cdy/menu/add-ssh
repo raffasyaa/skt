@@ -1,6 +1,24 @@
 #!/bin/bash
 clear
-
+# Mendefinisikan warna untuk pesan
+export RED='\033[0;31m'
+export GREEN='\033[0;32m'
+export YELLOW='\033[0;33m'
+export BLUE='\033[0;34m'
+export PURPLE='\033[0;35m'
+export CYAN='\033[0;36m'
+export CYAN_BG='\033[46;1;97m'   # Latar belakang cyan cerah dengan teks putih
+export LIGHT='\033[0;37m'
+export PINK='\033[0;35m'
+export ORANGE='\033[38;5;208m'
+export PINK_BG='\033[45;1;97m'
+export BIRU='\033[44;1;97m'
+export RED_BG='\033[41;1;97m'   # Latar belakang pink cerah dengan teks putih
+export NC='\033[0m'
+export INDIGO='\033[38;5;54m'
+export TEAL='\033[38;5;30m'
+export WHITE='\033[1;37m'
+clear
 # // Get Bot
 CHATID=$(grep -E "^#bot# " "/etc/bot/.bot.db" | cut -d ' ' -f 3)
 KEY=$(grep -E "^#bot# " "/etc/bot/.bot.db" | cut -d ' ' -f 2)
@@ -15,25 +33,23 @@ domain=$(cat /etc/xray/domain)
 nama=$(cat /etc/xray/username)
 clear
 
-
 # . Liner 
 function baris_panjang() {
-  echo -e "\033[5;36m ◇━━━━━━━━━━━━━━━━━◇ \033[0m"
+echo -e " ${TEAL}————————————————————————————————————————${NC}"
 }
 
 function xdxl_Banner() {
 clear
 baris_panjang
-echo -e "\033[95;1m     $nama       \033[0m"
+echo -e "  ${PURPLE}        SKARTI TUNNELING ${NC}"
 baris_panjang
 }
 
 function Sc_Credit(){
 sleep 1
 baris_panjang
-echo -e "\033[2;35m      Thank you for using \033[0m"
-echo -e "\033[2;35m             Script Credit \033[0m"
-echo -e "\033[2;35m              $nama  \033[0m"
+echo -e "\033[2;35m      Terimakasih sudah menggunakan \033[0m"
+echo -e "\033[2;35m         Script Credit by skarti \033[0m"
 baris_panjang
 exit 1
 }
@@ -57,27 +73,18 @@ loading() {
 
 xdxl_Banner
   echo -e ""
-  echo -e " Just input a number for \033[2;32mLimit IP\033[0m"
+  echo -e " ${WHITE}Just input a number for${NC} ${GREEN}Limit IP${NC}"
   echo -e ""
-  echo -e " 0 afor No Limit"
+  echo -e " ${YELLOW}0${NC} for No Limit"
   echo -e ""
 baris_panjang
 echo ""
 read -p " Username      : " Login
-echo
 read -p " Password      : " Pass
-echo
 read -p " Limit (IP)    : " iplimit
-echo
 read -p " Expired (day) : " masaaktif
 echo
-echo
-echo -e "\033[2;32mCreate.....\033[0m"
-echo -e "\033[97;1m"
-sleep 2 & loading $!
-echo -e "\033[0m"
-
-
+clear
 
 #limitip
 if [[ $iplimit -gt 0 ]]; then
@@ -155,7 +162,7 @@ TEXT="
 <code>SSH SSL          : </code><code>$domain:443@$Login:$Pass</code>
 <code>SSH UDP          : </code><code>$domain:1-65535@$Login:$Pass</code>
 <code>◇━━━━━━━━━━━━━━━━━◇</code>
-<code>Payload WSS      : </code><code>GET wss://BUG.COM/ HTTP/1.1[crlf]Host: $domain[crlf]Upgrade: websocket[crlf][crlf]</code>
+<code>Payload WSS      : </code><code>GET / HTTP/1.1[crlf]Host: [host][crlf]Upgrade: Websocket[crlf]Connection: Keep-Alive[crlf]Connection: Keep-Alive[crlf]User-Agent: [ua][crlf]Ping: clients3.google.com[crlf]Sec-WebSocket-Extensions: superspeed[crlf][crlf]</code>
 <code>◇━━━━━━━━━━━━━━━━━◇</code>
 OVPN Download : https://$domain:81/
 <code>◇━━━━━━━━━━━━━━━━━◇</code>
@@ -188,61 +195,57 @@ TEXT="<code>◇━━━━━━━━━━━━━━━━━◇
 $nama </code>"
 curl -s --max-time $TIME -d "chat_id=$CHATID&disable_web_page_preview=1&text=$TEXT&parse_mode=html" $URL >/dev/null
 clear
-PAYLOADWS="GET / HTTP/1.1[crlf]Host: [host][crlf]Connection: Upgrade[crlf]User-Agent: [ua][crlf]Upgrade: websocket[crlf][crlf]"
+PAYLOADWS="GET / HTTP/1.1[crlf]Host: [host][crlf]Upgrade: Websocket[crlf]Connection: Keep-Alive[crlf]Connection: Keep-Alive[crlf]User-Agent: [ua][crlf]Ping: clients3.google.com[crlf]Sec-WebSocket-Extensions: superspeed[crlf][crlf]"
 
 PAYLOADTLS="GET wss://$domain/ HTTP/1.1[crlf]Host: [host][crlf]Connection: Upgrade[crlf]User-Agent: [ua][crlf]Upgrade: websocket[crlf][crlf]"
 
 PAYLOADHANCED="HEAD / HTTP/1.1[crlf]Host: Masukan_Bug[crlf][crlf]PATCH / HTTP/1.1[crlf]Host: [host][crlf]Upgrade: websocket[crlf][crlf][split]HTTP/ 1[crlf][crlf]"
 
-
-
-
-
 # Details ACcount
 function Details_Ssh(){
 xdxl_Banner
-echo -e "  \033[37;1;7mSSH OPENVPN\033[0m"
+echo -e " ${PURPLE}           SSH/Dropbear${NC}"
 baris_panjang
-echo -e "\033[3;37m Remark      : $Login \033[0m"
-echo -e "\033[3;37m Password    : $Pass \033[0m"
-echo -e "\033[3;37m Limit Ip    : ${iplimit} Devic \033[0m"
-echo -e "\033[3;37m Domain      : $domain \033[0m"
-echo -e "\033[3;37m ISP         : $ISP \033[0m "
-echo -e "\033[3;37m OpenSSH     : 443, 80, 22 \033[0m"
-echo -e "\033[3;37m Port UDP    : 1-65535 \033[0m"
-echo -e "\033[3;37m SSH WS      : 80,8080,8880,2082 \033[0m"
-echo -e "\033[3;37m SSL/TLS     : 443 \033[0m"
-echo -e "\033[3;37m OVPN UDP    : 2200 \033[0m"
+echo -e "\033[3;37m Host         : $domain \033[0m"
+echo -e "\033[3;37m Username     : $Login \033[0m"
+echo -e "\033[3;37m Password     : $Pass \033[0m"
+echo -e "\033[3;37m Limit IP     : ${iplimit} Device \033[0m"
+baris_panjang
+echo -e "\033[3;37m OpenSSH      : 22, 80 \033[0m"
+echo -e "\033[3;37m Dropbear     : 80, 143 \033[0m"
+echo -e "\033[3;37m OpenSSH SSL  : 443 \033[0m"
+echo -e "\033[3;37m Dropbear SSL : 443 \033[0m"
+baris_panjang
+echo -e "\033[3;37m SSH WS NTLS  : 80,8080,8880,2082 \033[0m"
+echo -e "\033[3;37m SSH WS TLS   : 443 \033[0m"
+baris_panjang
+echo -e "\033[3;37m SSH UDP      : 1-65535 \033[0m"
+echo -e "\033[3;37m OpenVPN UDP  : 2200 \033[0m"
 baris_panjang
 }
 
 
 
 function Copy_Faste(){
-echo -e "\033[3;37m Port 80     : $domain:80@$Login:$Pass \033[0m"
-echo -e "\033[3;37m Port 443    : $domain:443@$Login:$Pass \033[0m"
-echo -e "\033[3;37m Udp Custom  : $domain:1-65535@$Login:$Pass\033[0m"
-echo -e "\033[3;37m OpenVpn     : https://$domain:81/ "
-echo -e "\033[3;37m Account     : https://$domain:81/ssh-$Login.txt "
+echo -e " ${PURPLE}             OpenVPN${NC}"
+baris_panjang
+echo -e "\033[3;37m https://$domain:81/ "
 }
 
 
 
 function Details_Payload(){
 baris_panjang
-echo -e "\033[3;37m Payload WS  : ${PAYLOADWS}\033[0m"
+echo -e " ${PURPLE}            Payload WS${NC}"
 baris_panjang
-echo -e "\033[3;37m Payload TLS : ${PAYLOADTLS}\033[0m"
-baris_panjang
-echo -e "\033[3;37m Payload ENCD: ${PAYLOADHANCED}\033[0m"
+echo -e "\033[3;37m ${PAYLOADWS}\033[0m"
 baris_panjang
 }
 
 
 
 function Expiry_Details(){
-echo -e "\033[33m Days in    : $masaaktif Day \033[0m"
-echo -e "\033[33m Expiry in  : $expe \033[0m"
+echo -e "\033[33m       Expired  : $expe \033[0m"
 }
 
 

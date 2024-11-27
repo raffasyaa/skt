@@ -9,44 +9,61 @@ BLUE='\033[0;34m'
 PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
 LIGHT='\033[0;37m'
-clear
-# ==========================================
-echo -e "${ORANGE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
-echo -e "                MEMBER SSH                   "
-echo -e "${ORANGE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
-echo "USERNAME          EXP DATE          "
-echo -e "${ORANGE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
-while read expired
-do
-AKUN="$(echo $expired | cut -d: -f1)"
-ID="$(echo $expired | grep -v nobody | cut -d: -f3)"
-exp="$(chage -l $AKUN | grep "Account expires" | awk -F": " '{print $2}')"
-status="$(passwd -S $AKUN | awk '{print $2}' )"
-if [[ $ID -ge 1000 ]]; then
-if [[ "$status" = "L" ]]; then
-printf "%-17s %2s %-17s %2s \n" "$AKUN" "$exp     "
-else
-printf "%-17s %2s %-17s %2s \n" "$AKUN" "$exp     "
-fi
-fi
-done < /etc/passwd
-echo -e "${ORANGE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
-echo -e "                DELETE SSH                   "
-echo -e "${ORANGE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
-echo ""
-read -p "Ketik Usernamenya : " user
+TEAL='\033[38;5;30m'
 
-if getent passwd $user > /dev/null 2>&1; then
+clear
+echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "               MEMBER SSH                   "
+echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo " NO  USERNAME          EXP DATE"
+echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+
+# Menampilkan daftar pengguna SSH
+users=()
+counter=1
+while read expired; do
+    AKUN="$(echo $expired | cut -d: -f1)"
+    ID="$(echo $expired | grep -v nobody | cut -d: -f3)"
+    exp="$(chage -l $AKUN | grep "Account expires" | awk -F": " '{print $2}')"
+    status="$(passwd -S $AKUN | awk '{print $2}' )"
+
+    if [[ $ID -ge 1000 ]]; then
+        users+=("$AKUN")
+        if [[ "$status" = "L" ]]; then
+            printf "%-3s %-17s %2s %-17s \n" " $counter" "$AKUN" "$exp"
+        else
+            printf "%-3s %-17s %2s %-17s \n" " $counter" "$AKUN" "$exp"
+        fi
+        ((counter++))
+    fi
+done < /etc/passwd
+
+echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "           SELECT USING NUMBER                   "
+echo -e "${RED}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
+
+# Input nomor pengguna
+read -p " ➣ Your Choice: " choice
+
+# Validasi input dan hapus pengguna
+if [[ $choice -ge 1 && $choice -le ${#users[@]} ]]; then
+    user="${users[$((choice-1))]}"
+    if getent passwd $user > /dev/null 2>&1; then
         userdel $user > /dev/null 2>&1
-		sed -i '/^$user:/d' /etc/group
+        sed -i "/^$user:/d" /etc/group
         exp=$(grep -w "^#ssh# $user" "/etc/ssh/.ssh.db" | cut -d ' ' -f 3 | sort | uniq)
-		grep -wE "^#ssh# $user" "/etc/ssh/.ssh.db" | awk '{print $1" "$2" "$3}' | sort | uniq | tail -1 >> /etc/xray/.userall.db
+        grep -wE "^#ssh# $user" "/etc/ssh/.ssh.db" | awk '{print $1" "$2" "$3}' | sort | uniq | tail -1 >> /etc/xray/.userall.db
         sed -i "/^#ssh# $user/d" /etc/ssh/.ssh.db
         rm -f /etc/ssh/$user
         rm -f /etc/kyt/limit/ssh/ip/${user}
-	    rm -f /var/www/html/ssh-$user.txt
-        echo -e "User $user Berhasil Di Hapus Sayang."
+        rm -f /var/www/html/ssh-$user.txt
+        echo ""
+        echo -e " ✅ ${GREEN}Succeed${NC}, Username ${RED}$user${NC} berhasil dihapus."
+        echo -e ""
+    else
+        echo -e " ⛔ Failed: Username ${RED}$user${NC} tidak ditemukan."
+    fi
 else
-        echo -e "Failure: User $user Tidak Di Temukan."
+    echo -e " ${RED}Nomor yang Anda input tidak valid.${NC}"
 fi
-

@@ -58,7 +58,7 @@ clear
 
 
 
-REPO="https://raw.githubusercontent.com/raffasyaa/skt/main/Cfg/"
+REPO="https://raw.githubusercontent.com/raffasyaa/skt/main/Kimak/"
 # fixhap fix Haproxy
 clear
 echo -e "${BlueCyan} ------------------------- ${Xark} "

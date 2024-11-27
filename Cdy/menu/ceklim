@@ -1,4 +1,5 @@
 #!/bin/bash
+clear
 
 g="\e[92;1m"
 RED="\033[31m"
@@ -6,6 +7,26 @@ NC='\033[0m'
 y='\033[1;93m'
 gg='\e[1;77m'
 ungu="\033[0;35m"
+
+# Mendefinisikan warna untuk pesan
+export RED='\033[0;31m'
+export GREEN='\033[0;32m'
+export YELLOW='\033[0;33m'
+export BLUE='\033[0;34m'
+export PURPLE='\033[0;35m'
+export CYAN='\033[0;36m'
+export CYAN_BG='\033[46;1;97m'   # Latar belakang cyan cerah dengan teks putih
+export LIGHT='\033[0;37m'
+export PINK='\033[0;35m'
+export ORANGE='\033[38;5;208m'
+export PINK_BG='\033[45;1;97m'
+export BIRU='\033[44;1;97m'
+export RED_BG='\033[41;1;97m'   # Latar belakang pink cerah dengan teks putih
+export NC='\033[0m'
+export INDIGO='\033[38;5;54m'
+export TEAL='\033[38;5;30m'
+export WHITE='\033[1;37m'
+
 clear
 touch /root/.system
 data1=( `awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd `)
@@ -19,9 +40,9 @@ echo -ne
 fi
 done
 clear
-echo -e "  ${y}───────────────────────────────────────${NC}"
-echo -e "            ️ ${g}USER LOGIN SSH${NC}  ️"
-echo -e "  ${y}───────────────────────────────────────${NC}"
+echo -e "  ${TEAL}───────────────────────────────────────${NC}"
+echo -e "            ❖ ${y}USER LOGIN SSH${NC} ❖"
+echo -e "  ${TEAL}───────────────────────────────────────${NC}"
 echo -e "    ${ungu} LOGIN IP    LIMIT IP    USERNAME ${NC}"
 mulog=$(cek-ssh)
 data=( `awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd`)
@@ -38,7 +59,7 @@ fi
 echo send_log > /dev/null
 done
 aktif=$(cat /root/.system | wc -l)
-echo -e "  ${y}───────────────────────────────────────${NC}"
-echo -e "            $aktif User Online"
-echo -e "  ${y}───────────────────────────────────────${NC}"
+echo -e "  ${TEAL}───────────────────────────────────────${NC}"
+echo -e "              $aktif User Online"
+echo -e "  ${TEAL}───────────────────────────────────────${NC}"
 sed -i "d" /root/.system

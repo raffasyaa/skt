@@ -8,9 +8,28 @@ FONT="\033[0m"
 GREENBG="\033[42;37m"
 REDBG="\033[41;37m"
 NC='\e[0m'
+
+# Mendefinisikan warna untuk pesan
+export RED='\033[0;31m'
+export GREEN='\033[0;32m'
+export YELLOW='\033[0;33m'
+export BLUE='\033[0;34m'
+export PURPLE='\033[0;35m'
+export CYAN='\033[0;36m'
+export CYAN_BG='\033[46;1;97m'   # Latar belakang cyan cerah dengan teks putih
+export LIGHT='\033[0;37m'
+export PINK='\033[0;35m'
+export ORANGE='\033[38;5;208m'
+export PINK_BG='\033[45;1;97m'
+export RED_BG='\033[41;1;97m'   # Latar belakang pink cerah dengan teks putih
+export NC='\033[0m'
+export BIRU='\033[44;1;97m'
+export INDIGO='\033[38;5;54m'
+export TEAL='\033[38;5;30m'
+export WHITE='\033[1;37m'
 MY 
 clear
-######################################
+
 # // GETTINGS SYSTEM
 ssh_service=$(/etc/init.d/ssh status | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
 
@@ -21,131 +40,161 @@ haproxy_service=$(systemctl status haproxy | grep Active | awk '{print $3}' | cu
 xray_service=$(systemctl status xray | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
 
 nginx_service=$(systemctl status nginx | grep Active | awk '{print $3}' | cut -d "(" -f2 | cut -d ")" -f1)
-
 clear
-######################################
+
+# Mengambil informasi sistem
+OS=$(lsb_release -ds)
+TRAM=$( free -m | awk 'NR==2 {print $2}' )
+URAM=$( free -m | awk 'NR==2 {print $3}' )
+UPTIME=$(uptime -s)
+current_time=$(date "+%Y-%m-%d %H:%M:%S")
+total_uptime=$(date -ud@$(( $(date -d "$current_time" +%s) - $(date -d "$UPTIME" +%s) )) +'%j days, %H hours')
+# Hilangkan nol di depan pada days dan hours
+formatted_uptime=$(uptime -p | cut -d " " -f 2-10)
+IP_VPS=$(curl -s ipinfo.io/ip )
+ISP=$(curl -s ipinfo.io/org | cut -d " " -f 2-10 )
+DOMAIN=$(cat /etc/xray/domain)
+
+# Mengambil informasi IP lengkap dari ipinfo.io
+IP_INFO=$(curl -s "http://ipinfo.io/$IP_VPS/json")
+IP_REGION=$(echo "$IP_INFO" | jq -r '.region')
+IP_COUNTRY=$(echo "$IP_INFO" | jq -r '.country')
+IP_LOC=$(echo "$IP_INFO" | jq -r '.loc')
+
+# Fungsi untuk mengambil total bandwidth menggunakan vnstat
+vnstat_output=$(vnstat -y 1 --style 0 | sed -n 6p)
+download=$(echo $vnstat_output | awk '{printf "%s %s", $2, $3}')
+upload=$(echo $vnstat_output | awk '{printf "%s %s", $5, $6}')
+total_usage=$(echo $vnstat_output | awk '{printf "%s %s", $8, $9}')
+
+# Menggabungkan download dan upload menjadi satu baris
+total_usage_line=$(printf "${TEAL}❖ ${WHITE}Total Usage    :${ORANGE} %s" "$total_usage ${CYAN}")
+total_upload=$(printf "${TEAL}❖ ${WHITE}Total Upload   :${ORANGE} %s" "$upload ${CYAN}")
+total_download=$(printf "${TEAL}❖ ${WHITE}Total Download :${ORANGE} %s" "$download ${CYAN}")
+
 # // RUNNING SSH
-######################################
 if [[ $ssh_service == "running" ]]; then 
    status_ssh="\033[92;1mON${NC}"
 else
    status_ssh="\033[91;1mOFF${NC} "
 fi
-######################################
+ 
 # // RUNNING WEBSOCKET
-######################################
 ssh_ws=$( systemctl status ws | grep Active | awk '{print $3}' | sed 's/(//g' | sed 's/)//g' )
 if [[ $ssh_ws == "running" ]]; then
     status_ws_epro="\033[92;1mON${NC}"
 else
     status_ws_epro="\033[91;1mOFF${NC} "
 fi
-######################################
+ 
 # RUNNING HAPROXY
-######################################
 if [[ $haproxy_service == "running" ]]; then 
    status_haproxy="\033[92;1mON${NC}"
 else
    status_haproxy="\033[91;1mOFF${NC} "
 fi
-######################################
+ 
 # RUNNING XRAY
-######################################
 if [[ $xray_service == "running" ]]; then 
    status_xray="\033[92;1mON${NC}"
 else
    status_xray="\033[91;1mOFF${NC} "
 fi
-######################################
+ 
 # RUNNING NGINX
-######################################
 if [[ $nginx_service == "running" ]]; then 
    status_nginx="\033[92;1mON${NC}"
 else
    status_nginx="\033[91;1mOFF${NC} "
 fi
-######################################
+ 
 # RUNNING DROPBEAR
-######################################
 if [[ $dropbear_service == "running" ]]; then 
    status_dropbear="\033[92;1mGOOD${NC}"
 else
    status_dropbear="\033[91;1mCRAZY${NC} "
 fi
 
-# \\ Vless account //
+# Vless account
 vlx=$(grep -c -E "^#& " "/etc/xray/config.json")
 let vla=$vlx/2
-# \\ Vmess account //
+# Vmess account
 vmc=$(grep -c -E "^### " "/etc/xray/config.json")
 let vma=$vmc/2
-# \\ Trojan account //
+# Trojan account
 ssh1="$(awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd | wc -l)"
 trx=$(grep -c -E "^#! " "/etc/xray/config.json")
 let trb=$trx/2
-# \\ shadowsocks account //
+# shadowsocks account
 ssx=$(grep -c -E "^#!# " "/etc/xray/config.json")
 let ssa=$ssx/2
 
 function xdxl_Banner() {
 clear
-echo -e "\033[96;1m┌─────────────────────────────────────────────────┐\e[0m"
-echo -e "\033[96;1m│ \e[41;1m                 SCLANS STORE VPN              \e[0m \033[96;1m│\e[0m"
-echo -e "\033[96;1m└─────────────────────────────────────────────────┘\e[0m"
+    echo -e " ${TEAL}╭════════════════════════════════════════════════╮${NC}"
+    echo -e " ${TEAL}│ ${NC}${RED_BG}            ❖ SKARTI VPN PROJECT ❖            ${NC}${TEAL} │${NC}"
+    echo -e " ${TEAL}╰════════════════════════════════════════════════╯${NC}"
 }
 
 
 function Service_System_Operating() {
-echo -e "\033[96;1m┌─────────────────────────────────────────────────┐\033[0m "
-echo -e "\033[96;1m│\e[97m SYSTEM          : $(cat /etc/os-release | grep -w ID | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/ID//g')     \033[0m "
-echo -e "\033[96;1m│\e[97m RAM             : $(free -m | awk 'NR==2 {print $2}')    \033[0m "
-echo -e "\033[96;1m│\e[97m UPTIME          : $(uptime -p | cut -d " " -f 2-10)\033[0m "
-echo -e "\033[96;1m│\e[97m IP VPS          : $(curl -s ipv4.icanhazip.com)     \033[0m "
-echo -e "\033[96;1m│\e[97m CITY            : $(cat /etc/xray/city)    \033[0m "
-echo -e "\033[96;1m│\e[97m ISP             : $(cat /etc/xray/isp)    \033[0m "
-echo -e "\033[96;1m│\e[97m DOMAIN          : $(cat /etc/xray/domain)    \033[0m "
-echo -e "\033[96;1m└─────────────────────────────────────────────────┘\033[0m"
+    echo -e " ${TEAL}╭────────────────────────────────────────────────╮${NC}"
+    echo -e " ${TEAL}│${NC} ${WHITE}OS${NC}        : $OS"
+    echo -e " ${TEAL}│${NC} ${WHITE}RAM${NC}       : ${URAM} Mb / ${TRAM} Mb"
+    echo -e " ${TEAL}│${NC} ${WHITE}CITY${NC}      : $IP_REGION"
+    echo -e " ${TEAL}│${NC} ${WHITE}ISP${NC}       : $ISP"
+    echo -e " ${TEAL}│${NC} ${WHITE}IP VPS${NC}    : ${TEAL}$IP_VPS${NC}"
+    echo -e " ${TEAL}│${NC} ${WHITE}DOMAIN${NC}    : ${TEAL}$DOMAIN${NC}"
+    echo -e " ${TEAL}│${NC} ${WHITE}UPTIME${NC}    : $formatted_uptime"
+    echo -e " ${TEAL}╰────────────────────────────────────────────────╯${NC}"
 }
 
 
 
 function Service_Status() {
-echo -e "\033[96;1m┌─────────────────────────────────────────────────┐\033[0m "
-echo -e "\033[96;1m|\e[0m\e[33m PROXY :\e[0m $status_haproxy  \e[0m|\e[33m NGINX :\e[0m $status_nginx  \e[0m|\e[33m XRAY :\e[0m $status_xray \e[0m| $status_dropbear  \e[96;1m  | \e[0m "
-echo -e "\033[96;1m└─────────────────────────────────────────────────┘\033[0m "
+    echo -e " ${TEAL}╭════════════════════════════════════════════════╮${NC}"
+    echo -e " ${TEAL}│${NC}${ORANGE}  NGINX : $status_nginx${NC} ${TEAL}│${NC} ${ORANGE} XRAY :${NC} $status_xray ${TEAL}│${NC} ${ORANGE} PROXY :${NC} $status_haproxy ${NC}${TEAL}│${NC} $status_dropbear ${TEAL} │ ${NC} "
+    echo -e " ${TEAL}╰════════════════════════════════════════════════╯${NC}"
 }
 
-
+function Cek_BW() {
+    echo -e " ${TEAL}╭════════════════════════════════════════════════╮${NC}"
+    echo -e " ${TEAL}│${NC} ${ORANGE}$total_usage_line${NC}"
+    echo -e " ${TEAL}│${NC} ${ORANGE}$total_upload${NC}"
+    echo -e " ${TEAL}│${NC} ${ORANGE}$total_download${NC}"
+    echo -e " ${TEAL}╰────────────────────────────────────────────────╯${NC}"
+}
 
 function Acces_Use_Command() {
-echo -e "\033[96;1m┌─────────────────────────────────────────────────┐\033[0m "
-echo -e "\033[96;1m│  \e[34m1.)\e[93m☞ \e[97m SSH/OPENVPN         \e[34m7.)\e[93m☞ \e[97m BOT TELEGRAM   \e[96;1m│\e[0m"   
-echo -e "\033[96;1m│  \e[34m2.)\e[93m☞ \e[97m XRAY MANAGER        \e[34m8.)\e[93m☞ \e[97m UPDATE SCRIPT  \e[96;1m│\e[0m"
-echo -e "\033[96;1m│  \e[34m3.)\e[93m☞ \e[97m XRAY TROJAN         \e[34m9.)\e[93m☞ \e[97m BACKUP RESTOR  \e[96;1m│\e[0m"
-echo -e "\033[96;1m│  \e[34m4.)\e[93m☞ \e[97m SLOWDNS            \e[34m10.)\e[93m☞ \e[97m FEATURES       \e[96;1m│\e[0m"
-echo -e "\033[96;1m│  \e[34m5.)\e[93m☞ \e[97m NOOBZVPNS          \e[34m11.)\e[93m☞ \e[97m HOME WELCOME   \e[96;1m│\e[0m"
-echo -e "\033[96;1m│  \e[34m6.)\e[93m☞ \e[97m SS-R                \e[34mx.)\e[93m☞ \e[97m EXIT           \e[96;1m│\e[0m"
-echo -e "\033[96;1m└─────────────────────────────────────────────────┘\033[0m"
+    echo -e " ${TEAL}╭════════════════════════════════════════════════╮${NC}"
+    echo -e " ${TEAL}│${NC}${BIRU}                ❖ MENU SERVICE ❖                ${NC}${TEAL}│${NC}"
+    echo -e " ${TEAL}╰════════════════════════════════════════════════╯${NC}"
+    echo -e " ${TEAL}╭────────────────────────────────────────────────╮${NC}"
+    echo -e " ${TEAL}│\033[0m${NC} [${TEAL}01${NC}] ${WHITE}✦${NC} ${NC}SSH / OPENVPN  ${NC}${TEAL}│${NC} [${TEAL}07${NC}] ${WHITE}✦${NC} ${NC}FEATURES       ${NC}${TEAL} │${NC}"
+    echo -e " ${TEAL}│\033[0m${NC} [${TEAL}02${NC}] ${WHITE}✦${NC} ${NC}CREATE XRAY    ${NC}${TEAL}│${NC} [${TEAL}08${NC}] ${WHITE}✦${NC} ${NC}BENCHMARK      ${NC}${TEAL} │${NC}"
+    echo -e " ${TEAL}│\033[0m${NC} [${TEAL}03${NC}] ${WHITE}✦${NC} ${NC}CREATE TROJAN  ${NC}${TEAL}│${NC} [${TEAL}09${NC}] ${WHITE}✦${NC} ${NC}SET WARP       ${NC}${TEAL} │${NC}"
+    echo -e " ${TEAL}│\033[0m${NC} [${TEAL}04${NC}] ${WHITE}✦${NC} ${NC}CREATE SLOWDNS ${NC}${TEAL}│${NC} [${TEAL}10${NC}] ${WHITE}✦${NC} ${NC}REBUILD VPS    ${NC}${TEAL} │${NC}"
+    echo -e " ${TEAL}│\033[0m${NC} [${TEAL}05${NC}] ${WHITE}✦${NC} ${NC}SET BOT API    ${NC}${TEAL}│${NC} [${TEAL}11${NC}] ${WHITE}✦${NC} ${NC}UPDATE SC      ${NC}${TEAL} │${NC}"
+    echo -e " ${TEAL}│\033[0m${NC} [${TEAL}06${NC}] ${WHITE}✦${NC} ${NC}SET BACKUP     ${NC}${TEAL}│${NC} [${TEAL}xx${NC}] ${WHITE}✦${NC} ${NC}EXIT           ${NC}${TEAL} │${NC}"
+    echo -e " ${TEAL}╰────────────────────────────────────────────────╯${NC}"
 }
 
-
-
 function Select_Display() {
-echo
-read -p "Select From option [1/11 or x] :  " hallo
-case $hallo in
-1) clear ; m-ssh ;; # menu ssh
-2) clear ; m-xray ;; # menu vmess
-3) clear ; m-tro ;; # menu vles
-4) clear ; sd ;; # menu trojan
-5) clear ; m-noobz ;; # menu noobz
-6) clear ; m-ssr ;; # menu sadowsocks
-7) clear ; m-bot ;; # menu bot telegram
-8) clear ; wget -q https://raw.githubusercontent.com/raffasyaa/skt/main/update.sh && bash update.sh ;; #Update script
-9) clear ; m-bkp ;; # menu backup
-10) clear ; m-ftr ;; # menu managers
-x) exit ;;
-11) welcome ;; # Back To Home Welcome
+read -p " ➣ Your Choice :  " semvak
+case $semvak in
+1) clear ; m-ssh ;;   # menu ssh
+2) clear ; m-xray ;;  # menu vmess/vless
+3) clear ; m-tro ;;   # menu trojan
+4) clear ; sd ;;      # menu slowdns
+5) clear ; m-bot ;;   # menu bot telegram
+6) clear ; m-bkp ;;   # menu backup
+7) clear ; m-ftr ;;   # menu managers
+8) clear ; wget -q https://raw.githubusercontent.com/raffasyaa/cekpepes/main/benchmarkmenu && bash benchmarkmenu ;; #Cek SPek VPS
+9) clear ; wget -q https://raw.githubusercontent.com/raffasyaa/W4rp/main/warpmenu && bash warpmenu ;;   # Menu Warp
+10) clear ; wget -q https://raw.githubusercontent.com/raffasyaa/rebuildpepes/main/rebuildpepesmenu && bash rebuildpepesmenu ;; #Rebuild Pepes
+11) clear ; wget -q https://raw.githubusercontent.com/raffasyaa/skt/main/update.sh && bash update.sh ;; #Update script
+xx) exit ;;
+
 esac
 }
 
@@ -153,5 +202,6 @@ esac
 xdxl_Banner
 Service_System_Operating
 Service_Status
+Cek_BW
 Acces_Use_Command
 Select_Display

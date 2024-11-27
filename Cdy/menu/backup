@@ -13,90 +13,121 @@ LIGHT='\033[0;37m'
 # Getting
 CHATID=$(grep -E "^#bot# " "/etc/bot/.bot.db" | cut -d ' ' -f 3)
 KEY=$(grep -E "^#bot# " "/etc/bot/.bot.db" | cut -d ' ' -f 2)
-export TIME="10"
-export URL="https://api.telegram.org/bot$KEY/sendMessage"
-clear
- 
+URL="https://api.telegram.org/bot$KEY"
+
+# IP dan domain
+IP=$(hostname -I | awk '{print $1}')
 domain=$(cat /etc/xray/domain)
 date=$(date +"%Y-%m-%d")
-clear
+
+# Email setup
 email=$(cat /root/email)
-if [[ "$email" = "" ]]; then
-clear
-echo "Masukkan Email Untuk Menerima Backup"
-echo -e ""
-read -rp "Input Your Email : " -e email
-cat <<EOF>>/root/email
-$email
-EOF
+if [[ "$email" == "" ]]; then
+    echo "Masukkan Email Untuk Menerima Backup"
+    read -rp "Input Your Email : " email
+    echo "$email" > /root/email
 fi
-clear
-echo -e "\033[1;92mMohon Menunggu , Proses Backup sedang berlangsung.......\033[0m"
-rm -rf /root/backup
-mkdir /root/backup
-cp /etc/passwd backup/
-cp /etc/group backup/
-cp /etc/shadow backup/
-cp /etc/gshadow backup/
-cp /etc/crontab backup/
-cp /etc/vmess/.vmess.db backup/
-cp /etc/ssh/.ssh.db backup/
-cp /etc/vless/.vless.db backup/
-cp /etc/trojan/.trojan.db backup/
-cp /etc/bot/.bot.db backup/
-cp -r /etc/kyt/limit backup/
-cp -r /etc/limit backup/qt/
-cp -r /etc/vmess backup/
-cp -r /etc/trojan backup/
-cp -r /etc/vless backup/
-cp -r /etc/slowdns backup/
-cp -r /var/lib/kyt/ backup/kyt 
-cp -r /etc/xray backup/xray
-cp -r /var/www/html/ backup/html
-cd /root
-zip -r $IP-$date.zip backup > /dev/null 2>&1
-rclone copy /root/$IP-$date.zip dr:backup/
-url=$(rclone link dr:backup/$IP-$date.zip)
-id=(`echo $url | grep '^https' | cut -d'=' -f2`)
-link="https://drive.google.com/u/4/uc?id=${id}&export=download"
-echo -e "
-Detail Backup 
-==================================
-IP VPS        : $IP
-Link Backup   : $link
-Tanggal       : $date
-==================================
-" | mail -s "Backup Data" $email
-rm -rf /root/backup
-rm -r /root/$IP-$date.zip
-clear
-CHATID="$CHATID"
-KEY="$KEY"
-TIME="$TIME"
-URL="$URL"
-TEXT="
+
+# Backup
+backup() {
+    echo -e "\033[1;92mMohon Menunggu , Proses Backup sedang berlangsung...\033[0m"
+    rm -rf /root/backup
+    mkdir /root/backup
+    cp /etc/passwd backup/
+    cp /etc/group backup/
+    cp /etc/shadow backup/
+    cp /etc/gshadow backup/
+    cp /etc/crontab backup/
+    cp /etc/vmess/.vmess.db backup/
+    cp /etc/ssh/.ssh.db backup/
+    cp /etc/vless/.vless.db backup/
+    cp /etc/trojan/.trojan.db backup/
+    cp /etc/bot/.bot.db backup/
+    cp -r /etc/kyt/limit backup/
+    cp -r /etc/limit backup/qt/
+    cp -r /etc/vmess backup/
+    cp -r /etc/trojan backup/
+    cp -r /etc/vless backup/
+    cp -r /etc/slowdns backup/
+    cp -r /var/lib/kyt/ backup/kyt
+    cp -r /etc/xray backup/xray
+    cp -r /var/www/html/ backup/html
+
+    cd /root
+    zip -r $IP-$date.zip backup > /dev/null 2>&1
+    rclone copy /root/$IP-$date.zip dr:backup/
+    url=$(rclone link dr:backup/$IP-$date.zip)
+    id=(`echo $url | grep '^https' | cut -d'=' -f2`)
+    link="https://drive.google.com/u/4/uc?id=${id}&export=download"
+    
+    # Kirim backup ke Telegram
+    TEXT="
 <code>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</code>
 <b>» BACKUP VPS SUCCESS</b>
 <code>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</code>
-<b>IP VPS  :</b> <code>${IP} </code>
+<b>IP VPS  :</b> <code>${IP}</code>
 <b>DOMAIN  :</b> <code>${domain}</code>
-<b>Tanggal : $date</b>
+<b>Tanggal :</b> $date
 <code>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</code>
 <b>Link Backup :</b> $link
 <code>━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</code>
 <code>Silahkan copy Link dan restore di VPS baru</code>
 "
-curl -s --max-time $TIME -d "chat_id=$CHATID&disable_web_page_preview=1&text=$TEXT&parse_mode=html" $URL >/dev/null
-echo ""
+    curl -s -d "chat_id=$CHATID&text=$TEXT&parse_mode=html" "$URL/sendMessage" >/dev/null
+
+    # Hapus file sementara
+    rm -rf /root/backup
+    rm -r /root/$IP-$date.zip
+}
+
+# Restore
+restore() {
+    echo "Masukkan ID file Telegram (file zip backup):"
+    read -rp "File ID : " file_id
+
+    # Download file dari Telegram
+    file_path=$(curl -s "$URL/getFile?file_id=$file_id" | jq -r '.result.file_path')
+    file_url="https://api.telegram.org/file/bot$KEY/$file_path"
+    wget -O /root/backup_restore.zip "$file_url"
+
+    # Ekstrak file
+    unzip -o /root/backup_restore.zip -d /root/restore/ > /dev/null 2>&1
+
+    # Restore file
+    cp /root/restore/backup/passwd /etc/
+    cp /root/restore/backup/group /etc/
+    cp /root/restore/backup/shadow /etc/
+    cp /root/restore/backup/gshadow /etc/
+    cp /root/restore/backup/crontab /etc/
+    cp -r /root/restore/backup/vmess /etc/
+    cp -r /root/restore/backup/trojan /etc/
+    cp -r /root/restore/backup/vless /etc/
+    cp -r /root/restore/backup/slowdns /etc/
+    cp -r /root/restore/backup/xray /etc/
+    cp -r /root/restore/backup/html /var/www/
+    cp -r /root/restore/backup/kyt /var/lib/
+
+    echo -e "${GREEN}Restore selesai! Silakan cek konfigurasi Anda.${NC}"
+
+    # Hapus file sementara
+    rm -rf /root/backup_restore.zip /root/restore
+}
+
+# Menu
 clear
-echo -e "
-Detail Backup 
-==================================
-IP VPS        : $IP
-Link Backup   : $link
-Tanggal       : $date
-Domain        : $domain
-==================================
-"
-echo "Silahkan copy Link dan restore di VPS baru"
-echo ""
+echo -e "Pilih Opsi:"
+echo -e "1. Backup"
+echo -e "2. Restore"
+read -rp "Pilih [1-2]: " option
+
+case $option in
+    1)
+        backup
+        ;;
+    2)
+        restore
+        ;;
+    *)
+        echo "Pilihan tidak valid!"
+        ;;
+esac
