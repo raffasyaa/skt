@@ -29,10 +29,10 @@ check_subdomain_exists() {
     fi
 }
 
-# Set constants
-DOMAIN=24clan.com
-CF_ID=farukbrowser0@gmail.com
-CF_KEY=95b295f79baa8c7a3c264ca5cc31b75131c6d
+# Konstanta
+DOMAIN="skartissh.online"
+CF_ID="skartistore@gmail.com"
+CF_KEY="f85902ca3abd71622dbc250f4e38afad434df"
 
 # Get zone ID
 ZONE=$(curl -sLX GET "https://api.cloudflare.com/client/v4/zones?name=${DOMAIN}&status=active" \
